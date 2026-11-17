@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora Câmbio Cuba</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: inputs à esquerda, resultado grande à direita; empilha no celular */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --ink: #14202e;
+  --muted: #5b6878;
+  --line: #dbe1e8;
+  --accent: #0b7a75;
+  --accent-soft: #e2f3f1;
+  --good: #1f7a3a; --good-bg: #e3f4e8;
+  --bad: #b3261e; --bad-bg: #fbe7e5;
+  --warn: #8a5a00; --warn-bg: #fff3d6;
+  --display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f161e; --surface: #17212c; --ink: #e8eef4; --muted: #9aa8b8; --line: #2a3644;
+    --accent: #4cc7bf; --accent-soft: #143331;
+    --good: #6fd38c; --good-bg: #16301f; --bad: #ff8a80; --bad-bg: #3a1b19; --warn: #f2c25b; --warn-bg: #352a12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f161e; --surface: #17212c; --ink: #e8eef4; --muted: #9aa8b8; --line: #2a3644;
+  --accent: #4cc7bf; --accent-soft: #143331;
+  --good: #6fd38c; --good-bg: #16301f; --bad: #ff8a80; --bad-bg: #3a1b19; --warn: #f2c25b; --warn-bg: #352a12;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 40px; display: grid; gap: 18px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; }
+h1 { font-family: var(--display); font-size: 1.5rem; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); font-size: 1rem; margin: 0 0 12px; text-wrap: balance; }
+.sub { color: var(--muted); font-size: .9rem; }
+a { color: var(--accent); }
+.grid { display: grid; grid-template-columns: 340px 1fr; gap: 18px; align-items: start; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+.fields { display: grid; gap: 12px; }
+label { display: grid; gap: 4px; font-size: .85rem; color: var(--muted); font-weight: 500; }
+.inp { display: flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.inp span { padding: 0 10px; color: var(--muted); font-size: .85rem; white-space: nowrap; }
+input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: 500 1.05rem var(--mono); padding: 9px 10px; font-variant-numeric: tabular-nums; }
+input:focus { outline: none; }
+.inp:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.hint { font-size: .78rem; color: var(--muted); }
+.hero { display: grid; gap: 6px; padding: 22px; border-radius: 12px; background: var(--accent-soft); border: 1px solid var(--line); }
+.hero .lbl { font-size: .85rem; color: var(--muted); font-weight: 500; }
+.hero .big { font-family: var(--display); font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 700; color: var(--accent); line-height: 1.05; font-variant-numeric: tabular-nums; }
+.hero .big small { font-size: .4em; color: var(--ink); font-weight: 500; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 2px; }
+.tile .k { font-size: .78rem; color: var(--muted); }
+.tile .v { font: 500 1.25rem var(--mono); font-variant-numeric: tabular-nums; }
+.chip { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .82rem; font-weight: 600; }
+.chip.good { background: var(--good-bg); color: var(--good); }
+.chip.bad { background: var(--bad-bg); color: var(--bad); }
+.chip.warn { background: var(--warn-bg); color: var(--warn); }
+.steps { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.steps td { padding: 7px 0; border-bottom: 1px solid var(--line); }
+.steps td:last-child { text-align: right; font-family: var(--mono); }
+.steps tr.total td { font-weight: 600; border-bottom: 0; color: var(--accent); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.out { font: 500 1.4rem var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+button { font: 600 .9rem var(--body); border-radius: 8px; padding: 9px 14px; cursor: pointer; border: 1px solid var(--accent); background: var(--accent); color: var(--surface); }
+button.ghost { background: transparent; color: var(--accent); }
+button:focus-visible, a:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+textarea { width: 100%; min-height: 92px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--ink); font: .95rem var(--body); padding: 10px; }
+.hist { width: 100%; border-collapse: collapse; font-size: .88rem; font-variant-numeric: tabular-nums; }
+.hist th, .hist td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.hist th:first-child, .hist td:first-child { text-align: left; }
+.hist th { color: var(--muted); font-weight: 500; font-size: .78rem; }
+.scroll { overflow-x: auto; }
+.empty { color: var(--muted); font-size: .88rem; }
+@media (prefers-reduced-motion: no-preference) { .hero .big { transition: color .2s; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Calculadora de câmbio Brasil → Cuba</h1>
+      <div class="sub">Digite as cotações do dia e ajuste a taxa e a margem. Tudo recalcula na hora.</div>
+    </div>
+    <a class="sub" href="https://eltoque.com/tasas-de-cambio-de-moneda-en-cuba-hoy" target="_blank" rel="noopener">Ver taxa do dia no elTOQUE ↗</a>
+  </header>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="t-in">
+      <h2 id="t-in">Cotações e ajustes</h2>
+      <div class="fields">
+        <label for="cuba">Dólar em Cuba (elTOQUE)
+          <div class="inp"><input id="cuba" type="number" inputmode="decimal" step="1" value="925"><span>CUP por US$</span></div>
+        </label>
+        <label for="brl">Dólar no Brasil (seu custo)
+          <div class="inp"><span>R$</span><input id="brl" type="number" inputmode="decimal" step="0.01" value="5.80"></div>
+        </label>
+        <label for="taxa">Taxa de saque no banco em Cuba
+          <div class="inp"><input id="taxa" type="number" inputmode="decimal" step="0.5" value="10"><span>%</span></div>
+          <span class="hint">Paga pelo cliente: reduz os CUP por real.</span>
+        </label>
+        <label for="margem">Minha margem
+          <div class="inp"><input id="margem" type="number" inputmode="decimal" step="0.5" value="5"><span>%</span></div>
+        </label>
+        <label for="conc">Concorrência
+          <div class="inp"><input id="conc" type="number" inputmode="decimal" step="1" value="175"><span>CUP por R$</span></div>
+          <span class="hint">Deixe vazio se não souber hoje.</span>
+        </label>
+      </div>
+    </section>
+
+    <div style="display:grid;gap:18px">
+      <section class="hero" aria-live="polite">
+        <span class="lbl">Cotação sugerida para o cliente</span>
+        <div class="big"><span id="r-cot">–</span> <small>CUP por R$ 1</small></div>
+        <div class="row"><span id="r-chip" class="chip">–</span><span class="sub" id="r-chipnote"></span></div>
+      </section>
+
+      <div class="tiles">
+        <div class="tile"><span class="k">R$ 100 rendem</span><span class="v" id="r-100">–</span></div>
+        <div class="tile"><span class="k">Meu lucro em R$ 100</span><span class="v" id="r-lucro">–</span></div>
+        <div class="tile"><span class="k">Dólar equivalente ao cliente</span><span class="v" id="r-deq">–</span></div>
+        <div class="tile"><span class="k">Mercado puro (sem taxa e lucro)</span><span class="v" id="r-mkt">–</span></div>
+      </div>
+
+      <section class="card" aria-labelledby="t-steps">
+        <h2 id="t-steps">Para onde vão R$ 100 do cliente</h2>
+        <table class="steps"><tbody>
+          <tr><td>Viram dólares no Brasil</td><td id="s-usd">–</td></tr>
+          <tr><td>Que valem em Cuba</td><td id="s-cup">–</td></tr>
+          <tr><td>Taxa de saque do banco</td><td id="s-taxa">–</td></tr>
+          <tr><td>Minha margem</td><td id="s-marg">–</td></tr>
+          <tr class="total"><td>A família recebe</td><td id="s-fam">–</td></tr>
+        </tbody></table>
+      </section>
+    </div>
+  </div>
+
+  <div class="two">
+    <section class="card" aria-labelledby="t-sim">
+      <h2 id="t-sim">Simular um envio</h2>
+      <div class="fields">
+        <label for="sim-brl">Cliente envia
+          <div class="inp"><span>R$</span><input id="sim-brl" type="number" inputmode="decimal" step="10" value="300"></div>
+        </label>
+        <div class="row"><span class="sub">Família recebe</span><span class="out" id="sim-cup">–</span></div>
+        <label for="sim-cup-in">Família precisa receber
+          <div class="inp"><input id="sim-cup-in" type="number" inputmode="decimal" step="1000" value="50000"><span>CUP</span></div>
+        </label>
+        <div class="row"><span class="sub">Cliente paga</span><span class="out" id="sim-pay">–</span></div>
+      </div>
+    </section>
+
+    <section class="card" aria-labelledby="t-msg">
+      <h2 id="t-msg">Mensagem para clientes</h2>
+      <textarea id="msg" aria-label="Mensagem para clientes" readonly></textarea>
+      <div class="row" style="margin-top:10px">
+        <button id="copy" type="button">Copiar mensagem</button>
+        <button id="save" type="button" class="ghost">Salvar cotação de hoje</button>
+        <span class="sub" id="status" role="status"></span>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="t-hist">
+    <h2 id="t-hist">Cotações salvas</h2>
+    <div class="scroll" id="hist-box"></div>
+    <p class="hint">Fica guardado só neste navegador. Para um histórico permanente, use a planilha.</p>
+  </section>
+</div>
+
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var nf = function (d) { return new Intl.NumberFormat("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d }); };
+  var n0 = nf(0), n2 = nf(2);
+  var brl = function (v) { return "R$ " + n2.format(v); };
+  var ids = ["cuba", "brl", "taxa", "margem", "conc"];
+  var store = {
+    get: function (k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+    set: function (k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  };
+
+  var saved = store.get("cc-inputs");
+  if (saved) ids.forEach(function (id) { if (saved[id] !== undefined) $(id).value = saved[id]; });
+
+  function num(id) { var v = parseFloat(String($(id).value).replace(",", ".")); return isFinite(v) ? v : null; }
+
+  // Cotação = (CUP por US$ ÷ R$ por US$) × (1 − taxa) × (1 − margem)
+  function calc() {
+    var cuba = num("cuba"), brlv = num("brl"), taxa = (num("taxa") || 0) / 100, marg = (num("margem") || 0) / 100, conc = num("conc");
+    if (!cuba || !brlv) return null;
+    var mkt = cuba / brlv;
+    var cot = mkt * (1 - taxa) * (1 - marg);
+    return { cuba: cuba, brl: brlv, taxa: taxa, marg: marg, conc: conc, mkt: mkt, cot: cot };
+  }
+
+  var last = null;
+  function render() {
+    var r = calc(); last = r;
+    var o = {}; ids.forEach(function (id) { o[id] = $(id).value; }); store.set("cc-inputs", o);
+    if (!r) {
+      ["r-cot","r-100","r-lucro","r-deq","r-mkt","s-usd","s-cup","s-taxa","s-marg","s-fam","sim-cup","sim-pay"].forEach(function (id) { $(id).textContent = "–"; });
+      $("r-chip").className = "chip warn"; $("r-chip").textContent = "Preencha o dólar em Cuba e no Brasil"; $("r-chipnote").textContent = "";
+      $("msg").value = ""; return;
+    }
+    $("r-cot").textContent = n2.format(r.cot);
+    $("r-100").textContent = n0.format(r.cot * 100) + " CUP";
+    $("r-lucro").textContent = brl(100 * (1 - r.taxa) * r.marg);
+    $("r-deq").textContent = brl(r.cuba / r.cot);
+    $("r-mkt").textContent = n2.format(r.mkt) + " CUP";
+
+    var usd = 100 / r.brl, cup = usd * r.cuba, tx = cup * r.taxa, mg = (cup - tx) * r.marg;
+    $("s-usd").textContent = "US$ " + n2.format(usd);
+    $("s-cup").textContent = n0.format(cup) + " CUP";
+    $("s-taxa").textContent = "− " + n0.format(tx) + " CUP";
+    $("s-marg").textContent = "− " + n0.format(mg) + " CUP";
+    $("s-fam").textContent = n0.format(cup - tx - mg) + " CUP";
+
+    var chip = $("r-chip"), note = $("r-chipnote");
+    if (r.conc) {
+      var diff = r.cot - r.conc;
+      // margem que empata com o concorrente
+      var mEmp = 1 - r.conc / (r.mkt * (1 - r.taxa));
+      if (diff >= 0) { chip.className = "chip good"; chip.textContent = "+" + n2.format(diff) + " vs concorrência"; }
+      else { chip.className = "chip bad"; chip.textContent = n2.format(diff) + " vs concorrência"; }
+      note.textContent = mEmp > 0
+        ? "Para empatar em " + n0.format(r.conc) + ", sua margem teria de ser " + nf(1).format(mEmp * 100) + "%."
+        : "Nem com margem zero você chega a " + n0.format(r.conc) + ": seu custo precisa cair.";
+    } else { chip.className = "chip warn"; chip.textContent = "Sem dado da concorrência"; note.textContent = ""; }
+
+    var sb = num("sim-brl"), sc = num("sim-cup-in");
+    $("sim-cup").textContent = sb ? n0.format(sb * r.cot) + " CUP" : "–";
+    $("sim-pay").textContent = sc ? brl(sc / r.cot) : "–";
+
+    var hoje = new Date().toLocaleDateString("pt-BR");
+    $("msg").value = "Câmbio Brasil → Cuba (" + hoje + ")\n1 real = " + n0.format(Math.floor(r.cot)) + " CUP\nR$ 100 = " + n0.format(Math.floor(r.cot) * 100) + " CUP\nConsulte antes de enviar.";
+  }
+
+  ids.concat(["sim-brl", "sim-cup-in"]).forEach(function (id) { $(id).addEventListener("input", render); });
+
+  function flash(t) { $("status").textContent = t; setTimeout(function () { $("status").textContent = ""; }, 2500); }
+  $("copy").addEventListener("click", function () {
+    var t = $("msg").value;
+    if (!t) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(t).then(function () { flash("Copiado."); }, function () { $("msg").select(); flash("Selecione e copie com Ctrl+C."); });
+    } else { $("msg").select(); flash("Selecione e copie com Ctrl+C."); }
+  });
+
+  function renderHist() {
+    var h = store.get("cc-hist") || [];
+    if (!h.length) { $("hist-box").innerHTML = '<p class="empty">Nenhuma cotação salva ainda. Use “Salvar cotação de hoje”.</p>'; return; }
+    var rows = h.slice().reverse().map(function (e) {
+      return "<tr><td>" + e.d + "</td><td>" + n0.format(e.cuba) + "</td><td>" + n2.format(e.brl) + "</td><td>" + nf(1).format(e.taxa * 100) + "%</td><td>" + nf(1).format(e.marg * 100) + "%</td><td><strong>" + n2.format(e.cot) + "</strong></td><td>" + (e.conc ? n0.format(e.conc) : "–") + "</td></tr>";
+    }).join("");
+    $("hist-box").innerHTML = '<table class="hist"><thead><tr><th>Data</th><th>Cuba (CUP/US$)</th><th>Brasil (R$/US$)</th><th>Taxa</th><th>Margem</th><th>Cotação</th><th>Concorrência</th></tr></thead><tbody>' + rows + "</tbody></table>";
+  }
+  $("save").addEventListener("click", function () {
+    if (!last) return;
+    var h = store.get("cc-hist") || [];
+    var d = new Date().toLocaleDateString("pt-BR");
+    h = h.filter(function (e) { return e.d !== d; });
+    h.push({ d: d, cuba: last.cuba, brl: last.brl, taxa: last.taxa, marg: last.marg, cot: last.cot, conc: last.conc });
+    if (h.length > 60) h = h.slice(-60);
+    flash(store.set("cc-hist", h) ? "Salvo." : "Este navegador não permite salvar.");
+    renderHist();
+  });
+
+  render(); renderHist();
+})();
+</script>
+</body>
+</html>
